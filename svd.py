@@ -1,3 +1,5 @@
+#coding=utf-8
+import sys
 from recsys.algorithm.factorize import SVD
 from recsys.datamodel.data import Data
 
@@ -25,23 +27,43 @@ likes={
     "D":{"shoes"},
 }
 
-data = Data()
+def color_user(input_file, output_file, data_file):
 
-# VALUE = 1.0
-# for username in likes:
-#     for user_likes in likes[username]:
-#         data.add_tuple((VALUE, username, user_likes)) # Tuple format is: <value, row, column>
+    data = Data()
+
+    # VALUE = 1.0
+    # for username in likes:
+    #     for user_likes in likes[username]:
+    #         data.add_tuple((VALUE, username, user_likes)) # Tuple format is: <value, row, column>
+
+    #读取所有user的履历，制作成SVD可执行的matrix
+    f_r = open(data_file, 'r')
+    for line in f_r:
+        info = line.split(',')
+        data.add_tuple((1.0, info[0], info[1]))
+
+    svd = SVD()
+    svd.set_data(data)
+    k = 5 # Usually, in a real dataset, you should set a higher number, e.g. 100
+    svd.compute(k=k, min_values=3, pre_normalize=None, mean_center=False, post_normalize=True)
+
+    #从question里读取需要被推荐的userid
+    fr = open(input_file, 'r')
+    for line in fr:
+        userid = line
+        output_userid = svd.similar(userid)[1][0] #与目标user最接近的一个user
+
+    #print(output_userid)
+    #保存最接近的userid
+    fw = open(output_file, 'w')
+    fw.write(str(output_userid))
+
+'''
+[1]:question.csv 读取需要被推荐的用户的id
+[2]:answer.csv 保存最接近的user的id
+[3]:data.csv 网站所有用户的履历
+'''
+
+color_user(sys.argv[1], sys.argv[2], sys.argv[3])
 
 
-f_r = open('user_data2.csv', 'r')
-for line in f_r:
-    info = line.split(',')
-    data.add_tuple((1.0, info[0], info[1]))
-
-svd = SVD()
-svd.set_data(data)
-k = 5 # Usually, in a real dataset, you should set a higher number, e.g. 100
-svd.compute(k=k, min_values=3, pre_normalize=None, mean_center=False, post_normalize=True)
-
-print svd.similar('12')
-print svd.similar('17')
