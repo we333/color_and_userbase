@@ -51,12 +51,21 @@ def color_user(input_file, output_file, data_file):
     fr = open(input_file, 'r')
     for line in fr:
         userid = line
-        output_userid = svd.similar(userid)[1][0] #与目标user最接近的一个user
+        user_list = svd.similar(userid) 
 
-    #print(output_userid)
-    #保存最接近的userid
+    #print('=============================================')
+    #print(user_list)
+    #print(len(user_list))
+
+    #保存所有相似度大于50%的用户id到answer file
     fw = open(output_file, 'w')
-    fw.write(str(output_userid))
+
+    del user_list[0] #删除需要被推荐的用户自身id
+
+    for user in user_list:
+        if user[1] > 0.5: 
+            fw.write(user[0] + '\n')
+    fw.close()
 
 '''
 [1]:question.csv 读取需要被推荐的用户的id
